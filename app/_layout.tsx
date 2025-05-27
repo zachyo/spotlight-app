@@ -1,29 +1,46 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import InitialLayout from "@/components/initialLayout";
+import ClerkAndCovexProviders from "@/providers/ClerkAndCovexProviders";
+import { useFonts } from "expo-font";
+import { SplashScreen } from "expo-router";
+import { useCallback, useEffect } from "react";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import * as NavigationBar from "expo-navigation-bar";
+import { Platform } from "react-native";
+import { StatusBar } from "expo-status-bar";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
+SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+  const [fontsLoaded] = useFonts({
+    "JetBrainsMono-Medium": require("../assets/fonts/JetBrainsMono-Medium.ttf"),
   });
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+  const onLayoutRootView = useCallback(async () => {
+    if (!fontsLoaded) {
+      await SplashScreen.hideAsync();
+      console.log("done");
+    }
+  }, [fontsLoaded]);
+
+  //update native navbar of andriod dark
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setBackgroundColorAsync("#000000");
+      NavigationBar.setButtonStyleAsync("light");
+    }
+  }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <ClerkAndCovexProviders>
+      <SafeAreaProvider>
+        <SafeAreaView
+          style={{ flex: 1, backgroundColor: "#000" }}
+          onLayout={onLayoutRootView}
+        >
+          {/* <Stack screenOptions={{ headerShown: false }} /> */}
+          <InitialLayout />
+        </SafeAreaView>
+      </SafeAreaProvider>
+      <StatusBar style="light" />
+    </ClerkAndCovexProviders>
   );
 }
