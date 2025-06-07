@@ -36,18 +36,38 @@ export const createuser = mutation({
   },
 });
 
-export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
+export async function getAuthenticatedUser(
+  ctx: QueryCtx | MutationCtx
+): Promise<{
+  _id: Id<"users">;
+  _creationTime: number;
+  bio?: string | undefined;
+  username: string;
+  fullname: string;
+  email: string;
+  image: string;
+  followers: number;
+  posts: number;
+  following: number;
+  clerkId: string;
+}> {
   const identity = await ctx.auth.getUserIdentity();
-  if (!identity) throw new Error("Unauthorized");
+  // const { signOut, userId } = useAuth();
+
+  // if (!identity) throw new Error("Unauthorized");
 
   const currentUser = await ctx.db
     .query("users")
-    .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+    .withIndex("by_clerk_id", (q) =>
+      q.eq("clerkId", identity?.subject as string)
+    )
     .first();
 
-  if (!currentUser) throw new Error("User not found");
+  // if (!currentUser) {
+  //   throw new Error("User not found");
+  // }
 
-  return currentUser;
+  return currentUser!;
 }
 
 export const getUserByClerkId = query({
@@ -70,7 +90,7 @@ export const updateProfile = mutation({
   handler: async (ctx, args) => {
     const currentUser = await getAuthenticatedUser(ctx);
 
-    await ctx.db.patch(currentUser._id, {
+    await ctx.db.patch(currentUser?._id as Id<"users">, {
       bio: args.bio,
       fullname: args.fullname,
     });
@@ -99,7 +119,9 @@ export const isFollowing = query({
     const follow = await ctx.db
       .query("follows")
       .withIndex("both", (q) =>
-        q.eq("followerId", currentUser._id).eq("followingId", args.followingId)
+        q
+          .eq("followerId", currentUser?._id as Id<"users">)
+          .eq("followingId", args.followingId)
       )
       .first();
 
@@ -115,25 +137,37 @@ export const toggleFollow = mutation({
     const existing = await ctx.db
       .query("follows")
       .withIndex("both", (q) =>
-        q.eq("followerId", currentUser._id).eq("followingId", args.followingId)
+        q
+          .eq("followerId", currentUser?._id as Id<"users">)
+          .eq("followingId", args.followingId)
       )
       .first();
 
     if (existing) {
       // unfollow
       await ctx.db.delete(existing._id);
-      await updateFollowCounts(ctx, currentUser._id, args.followingId, false);
+      await updateFollowCounts(
+        ctx,
+        currentUser?._id as Id<"users">,
+        args.followingId,
+        false
+      );
     } else {
       await ctx.db.insert("follows", {
-        followerId: currentUser._id,
+        followerId: currentUser?._id as Id<"users">,
         followingId: args.followingId,
       });
-      await updateFollowCounts(ctx, currentUser._id, args.followingId, true);
+      await updateFollowCounts(
+        ctx,
+        currentUser?._id as Id<"users">,
+        args.followingId,
+        true
+      );
 
       // create a notification
       await ctx.db.insert("notifications", {
         receiverId: args.followingId,
-        senderId: currentUser._id,
+        senderId: currentUser?._id as Id<"users">,
         type: "follow",
       });
     }

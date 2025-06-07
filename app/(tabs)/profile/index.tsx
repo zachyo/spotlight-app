@@ -24,7 +24,7 @@ import { COLORS } from "@/constants/theme";
 import { Image } from "expo-image";
 
 export default function Profile() {
-  const { signOut, userId } = useAuth();
+  const { signOut, userId, isLoaded } = useAuth();
   const currentUser = useQuery(
     api.user.getUserByClerkId,
     userId
@@ -33,6 +33,7 @@ export default function Profile() {
         }
       : "skip"
   );
+
   const posts = useQuery(api.posts.getPostsByUser, {
     userId: currentUser?._id as Id<"users">,
   });
@@ -58,7 +59,8 @@ export default function Profile() {
     }
   };
 
-  if (!currentUser || posts === undefined) return <Loader />;
+  if (!currentUser || posts === undefined || !isLoaded || !userId)
+    return <Loader />;
 
   return (
     <View style={styles.container}>

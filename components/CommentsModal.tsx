@@ -43,7 +43,7 @@ export default function CommentsModal({
 
       setNewComment("");
     } catch (error) {
-      console.log("Error addning comment", error);
+      console.log("Error adding comment", error);
     }
   };
 

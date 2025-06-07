@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getAuthenticatedUser } from "./user";
+import { Id } from "./_generated/dataModel";
 
 export const generateUploadUrl = mutation(async (ctx) => {
   const identity = await ctx.auth.getUserIdentity();
@@ -55,14 +56,18 @@ export const getFeedPosts = query({
         const like = await ctx.db
           .query("likes")
           .withIndex("by_user_and_post", (q) =>
-            q.eq("postId", post._id).eq("userId", currentUser._id)
+            q
+              .eq("postId", post._id)
+              .eq("userId", currentUser?._id as Id<"users">)
           )
           .first();
 
         const bookmark = await ctx.db
           .query("bookmarks")
           .withIndex("by_user_and_post", (q) =>
-            q.eq("postId", post._id).eq("userId", currentUser._id)
+            q
+              .eq("postId", post._id)
+              .eq("userId", currentUser?._id as Id<"users">)
           )
           .first();
 
@@ -93,7 +98,9 @@ export const toggleLike = mutation({
     const existing = await ctx.db
       .query("likes")
       .withIndex("by_user_and_post", (q) =>
-        q.eq("postId", args.postId).eq("userId", currentUser._id)
+        q
+          .eq("postId", args.postId)
+          .eq("userId", currentUser?._id as Id<"users">)
       )
       .first();
     const post = await ctx.db.get(args.postId);
@@ -179,8 +186,8 @@ export const deletePost = mutation({
     await ctx.db.delete(args.postId);
 
     // decrement user post by 1
-    await ctx.db.patch(currentUser._id, {
-      posts: Math.max(0, (currentUser.posts || 1) - 1),
+    await ctx.db.patch(currentUser?._id as Id<"users">, {
+      posts: Math.max(0, (currentUser?.posts || 1) - 1),
     });
   },
 });
@@ -194,12 +201,12 @@ export const getPostsByUser = query({
       ? await ctx.db.get(args.userId)
       : await getAuthenticatedUser(ctx);
 
-    if (!currentUser) throw new Error("User not found");
+    // if (!currentUser) throw new Error("User not found");
 
     const posts = await ctx.db
       .query("posts")
       .withIndex("by_user", (q) =>
-        q.eq("userId", args.userId || currentUser._id)
+        q.eq("userId", args.userId || (currentUser?._id as Id<"users">))
       )
       .collect();
 

@@ -190,7 +190,7 @@ export const styles = StyleSheet.create({
     borderBottomColor: COLORS.surface,
   },
   postDetailImage: {
-    width: width,
+    // width: width,
     height: width,
   },
   followButton: {

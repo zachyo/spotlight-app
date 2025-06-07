@@ -56,7 +56,6 @@ http.route({
       const name = `${first_name || ""} ${last_name || ""}`.trim();
 
       try {
-        console.log("creating");
         await ctx.runMutation(api.user.createuser, {
           email,
           fullname: name,
