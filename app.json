@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "spotlight-app",
+    "name": "Spotlight",
     "slug": "spotlight-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -56,6 +56,12 @@
       "eas": {
         "projectId": "9a6ea65a-f667-4d3d-9915-c45f9bc1d730"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/9a6ea65a-f667-4d3d-9915-c45f9bc1d730"
     }
   }
 }
