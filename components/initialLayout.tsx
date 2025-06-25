@@ -2,6 +2,7 @@ import { View, Text } from "react-native";
 import React, { useEffect } from "react";
 import { useAuth } from "@clerk/clerk-expo";
 import { Stack, useRouter, useSegments } from "expo-router";
+import ErrorBoundary from "./ErrorBoundary";
 
 export default function InitialLayout() {
   const { isLoaded, isSignedIn } = useAuth();
@@ -19,5 +20,9 @@ export default function InitialLayout() {
     else if (isSignedIn && inAuthScreen) router.replace("/(tabs)/home");
   }, [isLoaded, isSignedIn, segments]);
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <ErrorBoundary name="AppLayout">
+      <Stack screenOptions={{ headerShown: false }} />
+    </ErrorBoundary>
+  );
 }

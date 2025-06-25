@@ -1,3 +1,4 @@
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { ConvexReactClient } from "convex/react";
@@ -21,10 +22,12 @@ export default function ClerkAndCovexProviders({
     throw new Error("Missing key");
   }
   return (
-    <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-      <ConvexProviderWithClerk useAuth={useAuth} client={convex}>
-        {children}
-      </ConvexProviderWithClerk>
-    </ClerkProvider>
+    <ErrorBoundary name="RootProvider">
+      <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
+        <ConvexProviderWithClerk useAuth={useAuth} client={convex}>
+          {children}
+        </ConvexProviderWithClerk>
+      </ClerkProvider>
+    </ErrorBoundary>
   );
 }
